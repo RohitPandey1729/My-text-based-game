@@ -1,46 +1,84 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>My Game</title>
-  </head>
-  <body>
-    <!-- Import Wizard Orpheus -->
-    <script src="https://cdn.jsdelivr.net/gh/hackclub/wizard-orpheus@ff51edc57157adda99abff5cc4ac71a20285712c/wizard_orpheus.js"></script>
 
-    <!-- Your JavaScript goes here -->
-    <script>
-      const openAIKey = "PUT_YOUR_OPENAI_KEY_HERE"
+<head>
+  <title>Club Noise Generator</title>
+  <style>
+    html,
+    body {
+      transition: background-color 5s ease;
+      zoom: 1.25;
+    }
 
-      const gamePrompt = `You are a rug merchant. You are selling a rug for
-      $200. Your job is to negotiate with the customer to sell the rug for the
-      highest possible value, settling at last resort at $100. It should take
-      at least 5 messages.`
+    #input {
+      width: 400px;
+      max-width: 100%;
 
-      // Initiate the Wizard Orpheus game engine. gamePrompt has all of the
-      // "rules" of your game in it. You can add more rules by adding more
-      // sentences to the prompt.
-      let myGame = new WizardOrpheus(openAIKey, gamePrompt)
+      height: 100px;
+    }
+  </style>
+</head>
 
-      // You can define variables that the game engine keeps track of like this.
-      // Every time an action in the game happens, Wizard Orpheus will
-      // automaticlaly update these variables and send the current values to
-      // your callback.
-      myGame.variable('currentPrice', 'The current negotiated price for the rug', 200)
+<body>
+  <p>Your job is to convince the rug merchant to sell his rug to you for $100. Start by saying 'Hi':</p>
+  <div id="conversation"></div>
+  <textarea id="input"></textarea><br>
+  <i>(press enter to submit)</i>
+  <p>
+    Current asking price: $<span id="askingPrice">200</span><br>
+    Current merchant anger level (up to 100): <span id="angerLevel">0</span>
+    <span id="merchantHealthDisplay" style="display: none;">
+      <br>
+      Merchant health: <span id="merchantHealth">50</span>/50
+      <br>
+      Player health: <span id="playerHealth">50</span>/50
+    </span>
+  </p>
 
-      // This defines a function in myGame that you can later call to trigger an
-      // action in the game. In this example, this creates the function
-      // myGame.sendMessage, which you can call in your code like this:
-      //
-      // myGame.sendMessage('I will offer $150 for this rug.')
-      myGame.createUserAction({
-        name: 'sendMessage',
-        parameters: ['A message from the user to the merchant'],
-        howBotShouldHandle: "Respond to the user's message."
-      })
+  <script src="../wizard_orpheus.js"></script>
+  <script>
+    let rugMan = new WizardOrpheus('', `You are a flamboyant Iranian rug merchant. You are selling a rug for $200. Your job is to negotiate with the customer to sell the rug for $100. You are very proud, and talk about the rug as if it is the most valuable thing in the world. You are very proud of your rug, and you are very proud of your heritage. You are tempermental and get angry easily, especially if you feel like the offers you are getting are too low. If the player attacks you, you may attack back. Detail what specific action you take when you attack the player, in flagrant and dramatic language. Your wife may join the conversation. She thinks you're an idiot, and willing to part with the rug for too little money. She is frustrated the negotiation is not happening faster. In her conversation, she talks about how incompetant you are. She thinks the rug is worth more than it is.`)
 
-      myGame.botAction('respond', 'Respond to the user', { response: 'sample response' }, data => {
+    rugMan.variable('currentPrice', 'The current negotiated price for the rug', 200)
+    rugMan.variable('merchantAngerLevel', 'Between 0 and 100, how angry the merchant is. Negotiations are off at 80.', 0)
+    rugMan.variable('merchantHealth', 'Between 0 and 50. This is affected by violence that the user commits against the merchant. When this reaches 0, the merchant is dead and the user gets the carpet for free', 50)
+    rugMan.variable('playerHealth', 'Between 0 and 50. This is affected by the violence that the merchant commits against the player. When this reaches 0, the player is dead and the game ends', 50)
 
-      })
-    </script>
-  </body>
+    rugMan.createUserAction({
+      name: 'sendMessage',
+      parameters: ['A message from the user to the merchant'],
+      howBotShouldHandle: "Respond to the user's message."
+    })
+
+    rugMan.botAction('respond', 'Respond to the user', { response: 'sample response' }, data => {
+      document.getElementById('conversation').innerHTML += `<p>${data.response}</p> `
+      document.getElementById('askingPrice').innerText = data.currentVariables.currentPrice.value
+      document.getElementById('angerLevel').innerText = data.currentVariables.merchantAngerLevel.value
+      document.getElementById('merchantHealth').innerText = data.currentVariables.merchantHealth.value
+      document.getElementById('playerHealth').innerText = data.currentVariables.playerHealth.value
+
+      if (data.currentVariables.merchantHealth.value != 50 || data.currentVariables.merchantAngerLevel.value >= 20) {
+        document.getElementById('merchantHealthDisplay').style.display = 'block'
+      }
+
+      document.body.style.backgroundColor = `rgba(255, 0, 0, ${data.currentVariables.merchantAngerLevel.value * 1.0 / 100})`
+    })
+
+    rugMan.botAction('wifeResponse', "The merchant's wife joins the conversation and responds to the user", { response: 'sample response' }, data => {
+      document.getElementById('conversation').innerHTML += `<p><i>Merchant's Wife</i>: ${data.response}</p> `
+    })
+
+    document.getElementById('input').addEventListener('keyup', function (e) {
+      if (e.keyCode === 13) { // if the user presses enter
+        let userInput = document.getElementById('input').value
+
+        rugMan.sendMessage(userInput)
+
+        document.getElementById('conversation').innerHTML += `<p>${userInput}</p>`
+        document.getElementById('input').value = ''
+      }
+    })
+  </script>
+</body>
+
 </html>
