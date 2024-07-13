@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <title>Melting Snowman Game</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Our Game</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
+
 <body>
-  <div class="container">
-    <h1>Melting Snowman Game</h1>
-    <div class="Melting Snowman">
-      <!-- The Melting Snowman graphic will be dynamically generated using JavaScript -->
-    </div>
-    <div class="word">
-      <!-- The current word will be dynamically generated using JavaScript -->
-    </div>
-    <div class="letters">
-      <!-- The letters will be dynamically generated using JavaScript -->
-    </div>
-    <div class="message">
-      <!-- The win/lose message will be dynamically generated using JavaScript -->
-    </div>
-  </div>
   
+  <p>Your job is to escape from the haunted house.</p>
+  <div id="conversation">
+  </div>
+
+  <textarea id="input" placeholder="Type here..."></textarea>
+  <br>
+  <i>Press enter to submit...</i>
+
+  <p>Score: <span id="score">0</span></p>
+
+  <script src="https://wizard-orpheus.hackclub.dev/wizard_orpheus.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>
